@@ -155,7 +155,8 @@ public static class CatalogApi
             .Take(pageSize)
             .ToListAsync();
 
-        return TypedResults.Ok(new PaginatedItems<CatalogItem>(pageIndex, pageSize, totalItems, itemsOnPage));
+        var items = new PaginatedItems<CatalogItem>(pageIndex, pageSize, totalItems, itemsOnPage);
+        return TypedResults.Ok(items);
     }
 
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest, "application/problem+json")]

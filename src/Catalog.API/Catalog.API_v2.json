@@ -699,6 +699,10 @@
           },
           "onReorder": {
             "type": "boolean"
+          },
+          "imageData": {
+            "type": "string",
+            "format": "byte"
           }
         }
       },
