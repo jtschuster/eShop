@@ -120,6 +120,24 @@ public static class CatalogApi
         return await GetAllItems(paginationRequest, services, null, null, null);
     }
 
+    static Dictionary<CacheKey, PaginatedItems<CatalogItem>> s_itemsCache = new();
+    class CacheKey
+    {
+        public int PageSize { get; set; }
+        public int PageIndex { get; set; }
+        public string Name { get; set; }
+        public int? Type { get; set; }
+        public int? Brand { get; set; }
+
+        public CacheKey(int pageSize, int pageIndex, string name, int? type, int? brand)
+        {
+            PageSize = pageSize;
+            PageIndex = pageIndex;
+            Name = name;
+            Type = type;
+            Brand = brand;
+        }
+    }
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest, "application/problem+json")]
     public static async Task<Ok<PaginatedItems<CatalogItem>>> GetAllItems(
         [AsParameters] PaginationRequest paginationRequest,
@@ -130,7 +148,10 @@ public static class CatalogApi
     {
         var pageSize = paginationRequest.PageSize;
         var pageIndex = paginationRequest.PageIndex;
-
+        if (s_itemsCache.TryGetValue(new (pageSize, pageIndex, name, type, brand), out var items))
+        {
+            return TypedResults.Ok(items);
+        }
         var root = (IQueryable<CatalogItem>)services.Context.CatalogItems;
 
         if (name is not null)
@@ -155,7 +176,9 @@ public static class CatalogApi
             .Take(pageSize)
             .ToListAsync();
 
-        return TypedResults.Ok(new PaginatedItems<CatalogItem>(pageIndex, pageSize, totalItems, itemsOnPage));
+        items = new PaginatedItems<CatalogItem>(pageIndex, pageSize, totalItems, itemsOnPage);
+        s_itemsCache[new (pageSize, pageIndex, name, type, brand)] = items;
+        return TypedResults.Ok(items);
     }
 
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest, "application/problem+json")]
