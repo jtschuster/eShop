@@ -9,7 +9,7 @@ internal static class Utilities
         Span<byte> span = default;
         unsafe
         {
-            span = new Span<byte>((void*)Marshal.AllocHGlobal(1024 * 32), 1024 * 32);
+            span = new Span<byte>((void*)Marshal.AllocHGlobal(4096), 4096);
         }
         return span;
     }
